@@ -1,8 +1,33 @@
 ---
+
+- name: Ensure hostname set
+  hostname:
+    name: "{{ inventory_hostname }}"
+  register: hostname
+  tags: hostname
+
+- name: Ensure hostname is in /etc/hosts
+  lineinfile:
+    dest: /etc/hosts
+    regexp: "^{{ ansible_default_ipv4.address }}.+$"
+    line: "{{ ansible_default_ipv4.address }} {{ inventory_hostname }}"
+  register: hostname
+  tags: hostname
+
 - name: Set SELinux to disabled state
   selinux:
     state: disabled
   when: ansible_distribution in ['CentOS', 'Red Hat Enterprise Linux']
+
+- name: set timezone to UTC
+  timezone:
+    name: UTC
+  register: timezone
+
+- name: Ensure iptables --policy FORWARD ACCEPT
+  iptables: 
+    chain: FORWARD
+    policy: ACCEPT
 
 - name: Enable IPv4 forwarding
   sysctl:

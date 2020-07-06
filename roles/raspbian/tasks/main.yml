@@ -38,6 +38,46 @@
   when:
     - raspbian is true
 
+- name: Check swap enabled
+  shell: swapon -s | wc -l
+  register: swap_enabled
+
+- name: Disable swap
+  shell: "{{ item }}"
+  with_items:
+    - dphys-swapfile swapoff
+    - dphys-swapfile uninstall
+    - update-rc.d dphys-swapfile remove
+    - systemctl disable dphys-swapfile.service
+  when: swap_enabled.stdout != "0"
+
+- name: apt-get update
+  apt:
+    update_cache: yes
+    autoclean: yes
+    autoremove: yes
+    cache_valid_time: 86400
+
+- name: apt-get upgrade
+  apt:
+    upgrade: full
+
+- name: Check python-apt installed
+  shell: apt -qq list python-apt
+  register: python_apt_installed
+
+- name: python-apt dependency
+  shell: apt-get install -y python-apt
+  args:
+    warn: no
+  when: python_apt_installed.stdout is search('installed')
+
+- name: apt-get install packages
+  apt:
+    name: vim
+    state: latest
+    name: open-iscsi
+
 - name: Rebooting
   reboot:
   when:
