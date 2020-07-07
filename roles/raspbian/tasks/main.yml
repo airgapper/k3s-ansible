@@ -57,9 +57,6 @@
     autoclean: yes
     autoremove: yes
     cache_valid_time: 86400
-
-- name: apt-get upgrade
-  apt:
     upgrade: full
 
 - name: Check python-apt installed
@@ -77,6 +74,7 @@
     name: vim
     state: latest
     name: open-iscsi
+    state: latest
 
 - name: Rebooting
   reboot:

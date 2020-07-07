@@ -8,6 +8,7 @@
     - role: download
     - role: raspbian
     - role: ubuntu
+    - role: wireguard
 
 - hosts: master
   become: yes

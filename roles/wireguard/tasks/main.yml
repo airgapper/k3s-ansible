@@ -1,0 +1,35 @@
+---
+# steps sourced from: https://www.sigmdel.ca/michel/ha/wireguard/wireguard_02_en.html
+- name: apt-get install packages kernel-headers
+  apt:
+    name: raspberrypi-kernel-headers
+    state: latest
+  tags: wireguard
+
+- name: apt repository setup debian unstable
+  apt_repository:
+    repo:  deb http://deb.debian.org/debian/ unstable main
+    state: present
+    filename: unstable
+    update_cache: false
+  tags: wireguard
+
+- name: apt key add debian public key
+  apt_key:
+    url: https://ftp-master.debian.org/keys/archive-key-10.asc
+    state: present
+  tags: wireguard
+
+- name: apt preferences pin unstable debian repository to lower priority
+  lineinfile: 
+     line: "Package: *\nPin: release a=unstable\nPin-Priority: 150\n"
+     create: yes
+     path:  /etc/apt/preferences.d/limit-unstable
+  tags: wireguard
+
+- name: apt-get install wireguard
+  apt:
+    name: wireguard
+    state: latest
+    update_cache: yes
+  tags: wireguard
