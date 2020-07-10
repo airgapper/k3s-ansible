@@ -6,18 +6,11 @@
     state: latest
   tags: wireguard
 
-- name: apt repository setup debian unstable
-  apt_repository:
-    repo:  deb http://deb.debian.org/debian/ unstable main
-    state: present
-    filename: unstable
-    update_cache: false
-  tags: wireguard
-
-- name: apt key add debian public key
-  apt_key:
-    url: https://ftp-master.debian.org/keys/archive-key-10.asc
-    state: present
+- name: check unstable repo priority pinned
+  shell: 'grep -q a=unstable /etc/apt/preferences.d/limit-unstable'
+  ignore_errors: yes
+  changed_when: false
+  register: limit_unstable
   tags: wireguard
 
 - name: apt preferences pin unstable debian repository to lower priority
@@ -25,11 +18,33 @@
      line: "Package: *\nPin: release a=unstable\nPin-Priority: 150\n"
      create: yes
      path:  /etc/apt/preferences.d/limit-unstable
+  when: limit_unstable.rc != 0
+  tags: wireguard
+
+- name: apt repository setup debian unstable
+  apt_repository:
+    repo:  deb http://httpredir.debian.org/debian buster-backports main contrib non-free
+    state: present
+    filename: debian-backports.list
+    update_cache: false
+  tags: wireguard
+
+- name: apt key add debian public key
+  apt_key:
+    id: "{{ item }}"
+    url: https://ftp-master.debian.org/keys/archive-key-6.0.asc
+    state: present
+  with_items:
+    - 648ACFD622F3D138
   tags: wireguard
 
 - name: apt-get install wireguard
   apt:
-    name: wireguard
+    name: "{{ item }}"
     state: latest
     update_cache: yes
+  with_items:
+    - wireguard-dkms
+    - wireguard
+    - wireguard-tools
   tags: wireguard
