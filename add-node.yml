@@ -1,0 +1,28 @@
+---
+- hosts: master
+  name: Gather facts from master
+  become: yes
+  tasks:
+    - name: Read node-token from master
+      slurp:
+        src: /var/lib/rancher/k3s/server/node-token
+      register: node_token
+    
+    - name: Store Master node-token
+      set_fact:
+        token: "{{ node_token.content | b64decode | regex_replace('\n', '') }}"
+
+- hosts: node
+  gather_facts: yes
+  become: yes
+  roles:
+    - role: prereq
+    - role: download
+    - role: raspbian
+    - role: ubuntu
+    - role: wireguard
+
+- hosts: node
+  become: yes
+  roles:
+    - role: k3s/node
