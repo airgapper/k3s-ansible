@@ -18,8 +18,15 @@
     - "{{ systemd_dir }}/k3s-node.service"
     - /etc/rancher/k3s
     - /var/lib/rancher/k3s
-    - /var/lib/kubelet
     - /usr/local/bin/k3s
+
+- name: Reboot before /var/lib/kubelet/pod cleanup
+  reboot:
+
+- name: Remove service files, binaries and data
+  file:
+    name: /var/lib/kubelet
+    state: absent
 
 - name: daemon_reload
   systemd:
