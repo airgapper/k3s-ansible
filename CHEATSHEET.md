@@ -20,3 +20,6 @@ pip install ansible
 
 # Apply wireguard playbook to single host
 `ansible-playbook site.yml --limit "192.168.1.102"  -i inventory/cluster/hosts.ini  --tags=wireguard`
+
+# Apply a configuration update to a single host
+`ansible-playbook site.yml --limit "master"  -i inventory/cluster/hosts.ini  --tags=config_update`
