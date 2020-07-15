@@ -1,0 +1,29 @@
+---
+
+- name: disable K3s service
+  systemd:
+    name: k3s
+    state: stopped
+  when: "'master' in group_names"
+  tags: main
+
+- name: disable K3s node service
+  systemd:
+    name: k3s-node
+    state: stopped
+  when: "'node' in group_names"
+  tags: main
+
+- name: Download k3s update {{ k3s_version }} binary armhf to /tmp/k3s
+  get_url:
+    url: https://github.com/rancher/k3s/releases/download/{{ k3s_version }}/k3s-armhf
+    dest: /tmp/k3s
+    force: true
+    owner: root
+    group: root
+    mode: 0755
+  tags: main
+
+- name: Overwrite current /usr/local/bin/k3s with update
+  command: mv /tmp/k3s /usr/local/bin/k3s
+  tags: main

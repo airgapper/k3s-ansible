@@ -1,0 +1,39 @@
+---
+
+- name: check k3s upgraded
+  shell: /usr/local/bin/k3s --version
+  register: k3s_version_installed
+  failed_when: 'k3s_version not in k3s_version_installed.stdout'
+  tags: post
+
+- name: Rebooting
+  reboot:
+  tags: post
+
+- name: uncordon node
+  shell: kubectl uncordon {{ inventory_hostname }}
+  register: uncordoned
+  until: uncordoned.stdout.find("uncordoned") != -1
+  delegate_to: localhost
+  retries: 20
+  delay: 5
+  become: no
+  tags: 
+   - post
+   - uncordon
+
+- name: Run K3s service
+  systemd:
+    name: k3s
+    state: started
+    enabled: yes
+  when: "'master' in group_names"
+  tags: main
+
+- name: Run K3s node service
+  systemd:
+    name: k3s-node
+    state: started
+    enabled: yes
+  when: "'node' in group_names"
+  tags: main

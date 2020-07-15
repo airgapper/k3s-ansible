@@ -1,0 +1,28 @@
+---
+
+- name: check current version
+  shell: /usr/local/bin/k3s --version
+  register: k3s_version_installed
+  tags: pre
+
+- name: installed vs upgrade version
+  debug:
+    msg: "Installed: {{ k3s_version_installed.stdout }} Upgrade to: {{ k3s_version }}"
+  tags: pre
+
+- name: drain pods and cordon node
+  shell: kubectl drain {{ inventory_hostname }} --delete-local-data  --ignore-daemonsets
+  delegate_to: localhost
+  become: no
+  tags: pre
+
+- name: wait for pods to be drain
+  shell: kubectl drain {{ inventory_hostname }} --delete-local-data --ignore-daemonsets
+  delegate_to: localhost
+  become: no
+  register: node_drained
+  until: node_drained.stdout.find("drained") != -1
+  delay: 5
+  retries: 10
+  tags: pre
+
