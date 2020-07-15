@@ -12,6 +12,11 @@ pip install ansible
 # Reset all nodes
 `ansible-playbook reset.yml -i inventory/cluster/hosts.ini`
 
+# Upgrade cluster
+- Update inventory/cluster/group_vars/all.yml with the expected k3s version
+- Run upgrade on master `ansible-playbook upgrade-k3s.yml --limit "master"  -i inventory/cluster/hosts.ini`
+- Run upgrade on worker nodes `ansible-playbook upgrade-k3s.yml --limit "node"  -i inventory/cluster/hosts.ini` 
+
 # Reset a single node, remove from cluster
 `ansible-playbook reset.yml --limit "worker1"  -i inventory/cluster/hosts.ini`
 
